@@ -15,13 +15,16 @@ hash_err_t HashDump (hash_ctx_t* hash_ctx, const char* file_name)
     for (int j = 0; j < kHashMapCap; j++) {
 
         list_t* cur_list = hash_ctx->src[j];
-        int     list_cap = cur_list->capacity;
+
+        int list_size = cur_list->size;
+        list_size = (list_size == 0) ? 0 : list_size + 1; 
 
         fprintf (csv_file, "Hash = %d |", j);
 
-        for (int i = 0; i < list_cap; i++) {
+        for (int i = 0; i < list_size; i++) {
             fprintf (csv_file, " idx = %d; val = %s |", i, cur_list->data[i]);
         }
+
         fprintf (csv_file, "\n");
     }
 

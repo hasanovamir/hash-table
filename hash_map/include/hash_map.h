@@ -3,6 +3,7 @@
 //--------------------------------------------------------------------------------
 
 #include "list.h"
+#include "general_io_file_func.h"
 
 //--------------------------------------------------------------------------------
 
@@ -34,11 +35,17 @@ enum class hash_err_t
     invalid_tail          = 12,
     invalid_size          = 13,
     incorrect_numbering   = 14,
+    invalid_file_size     = 15,
+    no_data_file          = 16,
 };
 
 //--------------------------------------------------------------------------------
 
 hash_err_t HashDump (hash_ctx_t* hash_ctx, const char* file_name);
 hash_err_t InitHashMap (hash_ctx_t** hash_ctx);
+int CountHashFunction (char* str, int str_len);
+hash_err_t HashInsert (hash_ctx_t* hash_ctx, char* str, int str_len);
+hash_err_t TakeHashData (hash_ctx_t* hash_ctx, char* file_name);
+hash_err_t GetFileName  (int argc, char** argv, char** file_name);
 
 //--------------------------------------------------------------------------------

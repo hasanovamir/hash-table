@@ -1,4 +1,5 @@
 dump
 *.txt
 *.out
+*.csv
 Makefile

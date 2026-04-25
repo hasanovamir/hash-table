@@ -2,27 +2,23 @@
 
 //————————————————————————————————————————————————————————————————————————————————
 
-hash_err_t InitHashMap (hash_ctx_t** hash_ctx)
+hash_err_t HashInsert (hash_ctx_t* hash_ctx, char* str, int str_len)
 {
-    *hash_ctx = (hash_ctx_t*) calloc (1, sizeof (hash_ctx_t));
-    if (*hash_ctx == nullptr) {
+    DEBUG_ASSERT (str != nullptr);
+
+    char* buf = (char*) calloc (str_len + 1, sizeof (char));
+    if (buf == nullptr) {
         PRINTERR (hash_err_t::allocate_err);
         return hash_err_t::allocate_err;
     }
 
-    list_t** src = (list_t**) calloc (kHashMapCap, sizeof (list_t*));
-    if (src == nullptr) {
-        PRINTERR (hash_err_t::allocate_err);
-        return hash_err_t::allocate_err;
-    }
+    memcpy (buf, str, str_len);
 
-    (*hash_ctx)->src = src;
-    hash_ctx_t* hash = *hash_ctx;
+    int hash = CountHashFunction (buf, str_len);
 
-    for (int i = 0; i < kHashMapCap; i++) {
-        if (ListInit (&hash->src[i]) != list_err_t::success) {
-            return hash_err_t::allocate_err;
-        }
+    list_err_t list_err = ListAdd (hash_ctx->src[hash], buf);
+    if (list_err != list_err_t::success) {
+        return (hash_err_t) list_err;
     }
 
     return hash_err_t::success;
