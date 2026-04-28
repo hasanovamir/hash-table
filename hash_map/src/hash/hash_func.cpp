@@ -2,19 +2,83 @@
 
 //————————————————————————————————————————————————————————————————————————————————
 
-int CountHashFunction (char* str, int str_len)
+static int HashFunc5 (char* str, int str_len);
+static int HashFunc4 (char* str, int str_len);
+static int HashFunc3 (char* str, int str_len);
+static int HashFunc2 (char* str, int str_len);
+static int HashFunc1 (char* str, int str_len);
+
+//————————————————————————————————————————————————————————————————————————————————
+
+int CountHashFunction (char* str, int str_len) {
+    int hash = 0;
+#if defined(HASH_5)
+    hash = HashFunc5(str, str_len);
+#elif defined(HASH_4)
+    hash = HashFunc4(str, str_len);
+#elif defined(HASH_3)
+    hash = HashFunc3(str, str_len);
+#elif defined(HASH_2)
+    hash = HashFunc2(str, str_len);
+#elif defined(HASH_1)
+    hash = HashFunc1(str, str_len);
+#else
+    hash = HashFunc5 (str, str_len);
+#endif
+    return hash;
+}
+
+//————————————————————————————————————————————————————————————————————————————————
+
+static int HashFunc1 (char* str, int str_len)
+{
+    return 0;
+}
+
+//————————————————————————————————————————————————————————————————————————————————
+
+static int HashFunc2 (char* str, int str_len)
 {
     DEBUG_ASSERT (str != nullptr);
 
-    int cur_hash = 0;
+    return str[0];
+}
+
+//————————————————————————————————————————————————————————————————————————————————
+
+static int HashFunc3 (char* str, int str_len)
+{
+    return str_len;
+}
+
+//————————————————————————————————————————————————————————————————————————————————
+
+static int HashFunc4 (char* str, int str_len)
+{
+    int hash = 0;
+
+    for (int i = 0; i < str_len; i++) {
+        hash += str[i];
+    }
+
+    return hash;
+}
+
+//————————————————————————————————————————————————————————————————————————————————
+
+static int HashFunc5 (char* str, int str_len)
+{
+    DEBUG_ASSERT (str != nullptr);
+
+    unsigned int cur_hash = 0;
 
     for (int i = 0; i < str_len; i++) {
         cur_hash = (cur_hash << 5) + cur_hash + str[i];
     }
 
-    int hash = cur_hash % kHashMapCap;
+    unsigned hash = cur_hash % kHashMapCap;
 
-    return (cur_hash < 0) ? hash + kHashMapCap : hash;
+    return (int) hash;
 }
 
 //————————————————————————————————————————————————————————————————————————————————

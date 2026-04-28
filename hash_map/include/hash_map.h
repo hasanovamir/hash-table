@@ -47,5 +47,9 @@ int CountHashFunction (char* str, int str_len);
 hash_err_t HashInsert (hash_ctx_t* hash_ctx, char* str, int str_len);
 hash_err_t TakeHashData (hash_ctx_t* hash_ctx, char* file_name);
 hash_err_t GetFileName  (int argc, char** argv, char** file_name);
+bool HashFindElement (hash_ctx_t* hash_ctx, char* str, int str_len);
+hash_err_t HashInitNewStr (int str_len, char** buf);
+void HashDestroy (hash_ctx_t* hash_ctx);
+hash_err_t HashDumpForData (hash_ctx_t* hash_ctx, const char* file_name);
 
 //--------------------------------------------------------------------------------

@@ -63,15 +63,17 @@ hash_err_t ReadSrc (const char* file_name, int file_size, char* src_buffer)
 
 //————————————————————————————————————————————————————————————————————————————————
 
-void ParseHashData (hash_ctx_t* hash_ctx, char* buffer, int file_name)
+void ParseHashData (hash_ctx_t* hash_ctx, char* buffer, int file_size)
 {
     DEBUG_ASSERT (buffer != nullptr);
 
     int pos = 0;
 
-    while (pos < file_name) {
+    while (pos < file_size) {
         int str_len = atoi (buffer + pos);
+
         int num_len = CountNumbers (str_len);
+
         pos += num_len;
         HashInsert (hash_ctx, buffer + pos, str_len);
         pos += str_len;
