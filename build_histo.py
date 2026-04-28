@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def read_data (filename):
+
     hashes = []
     counts = []
 
@@ -22,11 +23,13 @@ def read_data (filename):
 
                 except ValueError:
                     print (f"Пропущена строка с ошибкой: {line}")
-
     return hashes, counts
 
-def main():
+def main ():
+
     if len (sys.argv) < 2:
+        print ("Использование: python plot_hist.py <файл_с_данными> [выходной_файл.png]")
+        print ("Пример: python plot_hist.py data.txt result.png")
         sys.exit (1)
 
     data_filename   = sys.argv[1]
@@ -42,30 +45,36 @@ def main():
     sorted_hashes = [p[0] for p in sorted_pairs]
     sorted_counts = [p[1] for p in sorted_pairs]
 
-    variance = np.var (sorted_counts)
-    print (f"Дисперсия распределения по хешам: {variance:.4f}")
+    variance       = np.var (sorted_counts)
+    total_elements = sum    (sorted_counts)
+    num_buckets    = max    (sorted_hashes) + 1
+    load_factor    = total_elements / num_buckets
+
+    print (f"Дисперсия распределения по хешам: {variance:.4f}"                         )
+    print (f"Коэффициент загрузки (load factor): {load_factor:.4f} (элементов на слот)")
 
     plt.figure (figsize = (14, 7))
-    bars = plt.bar (sorted_hashes, sorted_counts, width = 0.4,
-                   color = plt.cm.plasma (np.linspace (0.2, 0.9, len (sorted_hashes))),
-                   edgecolor = 'black', linewidth = 0.6, alpha = 0.85)
+    plt.bar    (sorted_hashes, sorted_counts, width = 0.8,
+                color = plt.cm.plasma (np.linspace (0.2, 0.9, len (sorted_hashes))),
+                edgecolor = 'black', linewidth = 0.6, alpha = 0.85                )
 
-    plt.xlabel ('Хеш', fontsize = 12)
-    plt.ylabel ('Количество элементов', fontsize = 12)
-    plt.title (data_filename, fontsize = 15, fontweight = 'bold')
+    plt.xlabel ('Хеш', fontsize = 12                             )
+    plt.ylabel ('Количество элементов', fontsize = 12            )
+    plt.title  (data_filename, fontsize = 15, fontweight = 'bold')
 
-    plt.text (0.95, 0.95, f'Дисперсия = {variance:.4f}',
-             transform = plt.gca().transAxes, fontsize = 10,
-             verticalalignment = 'top', horizontalalignment = 'right',
-             bbox = dict (boxstyle = 'round', facecolor = 'white', alpha = 0.8))
+    info_text = f'Дисперсия = {variance:.4f}\nLoad Factor = {load_factor:.4f}'
+    plt.text (0.95, 0.95, info_text,
+              transform = plt.gca().transAxes, fontsize = 10,
+              verticalalignment = 'top', horizontalalignment = 'right',
+              bbox = dict (boxstyle = 'round', facecolor = 'white', alpha = 0.8))
 
-    step = max (1, len (sorted_hashes) // 20)
-    plt.xticks (sorted_hashes[::step], rotation = 45, ha = 'right', fontsize = 9)
-    plt.grid (axis = 'y', linestyle = '--', alpha = 0.5)
+    step = max       (1, len (sorted_hashes) // 20                                    )
+    plt.xticks       (sorted_hashes[::step], rotation = 45, ha = 'right', fontsize = 9)
+    plt.grid         (axis = 'y', linestyle = '--', alpha = 0.5                       )
     plt.tight_layout ()
 
     plt.savefig (output_filename, dpi = 150, bbox_inches = 'tight')
-    print (f"Гистограмма сохранена в файл: {output_filename}")
+    print       (f"Гистограмма сохранена в файл: {output_filename}")
 
 if __name__ == "__main__":
     main ()

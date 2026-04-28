@@ -66,19 +66,46 @@ static int HashFunc4 (char* str, int str_len)
 
 //————————————————————————————————————————————————————————————————————————————————
 
-static int HashFunc5 (char* str, int str_len)
+static int HashFunc5 (char* str, int str_len) 
 {
     DEBUG_ASSERT (str != nullptr);
 
-    unsigned int cur_hash = 0;
+    unsigned int result = 0;
 
-    for (int i = 0; i < str_len; i++) {
-        cur_hash = (cur_hash << 5) + cur_hash + str[i];
-    }
+    __asm__ volatile (
+    "movl  $5381, %%eax\n"
+    "movq  %1   , %%r8 \n"
+    "movl  %2   , %%ecx\n"
+    ".hash_count_loop: \n"
 
-    unsigned hash = cur_hash % kHashMapCap;
+    "shll   $2    , %%eax   \n"
+    "leal   (%%eax, %%eax, 8), %%eax   \n"
+    "movzbl (%%r8), %%edx   \n"
+    "addl   %%edx , %%eax   \n"
+    "incq   %%r8            \n"
+    "loop   .hash_count_loop\n"
 
-    return (int) hash;
+    "movl   $10000, %%ecx\n"
+    "xorl   %%edx , %%edx\n"
+    "divl   %%ecx        \n"
+    "movl   %%edx , %0   \n"
+
+    : "=r" (result)
+    : "r" (str), "r" (str_len)
+    : "eax", "ecx", "edx", "r8", "memory", "cc"
+    );
+
+    // unsigned int cur_hash = 0;
+
+    // for (int i = 0; i < str_len; i++) {
+    //     cur_hash = (cur_hash << 5) + cur_hash + str[i];
+    // }
+
+    // unsigned hash = cur_hash % kHashMapCap;
+
+    // return (int) hash;
+    
+    return (int)result;
 }
 
 //————————————————————————————————————————————————————————————————————————————————
