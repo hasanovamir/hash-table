@@ -2,6 +2,7 @@
 
 //--------------------------------------------------------------------------------
 
+#include "ctype.h"
 #include "list.h"
 #include "general_io_file_func.h"
 
@@ -51,5 +52,11 @@ bool HashFindElement (hash_ctx_t* hash_ctx, char* str, int str_len);
 hash_err_t HashInitNewStr (int str_len, char** buf);
 void HashDestroy (hash_ctx_t* hash_ctx);
 hash_err_t HashDumpForData (hash_ctx_t* hash_ctx, const char* file_name);
+hash_err_t InitBuffer (char** src,int size);
+hash_err_t ReadSrc    (const char* file_name, int file_size, char* src_buffer);
+int CountNumbers (int val);
+void ParseHashData (hash_ctx_t* hash_ctx, char* buffer, int file_name);
+int CopyCurStr (char* src, char* dst, int* pos, int file_size);
+hash_err_t HashTest (hash_ctx_t* hash_ctx, char* file_name);
 
 //--------------------------------------------------------------------------------

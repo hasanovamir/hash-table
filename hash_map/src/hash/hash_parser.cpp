@@ -1,10 +1,5 @@
 #include "hash_map.h"
 
-static hash_err_t InitBuffer (char** src,int size);
-static hash_err_t ReadSrc    (const char* file_name, int file_size, char* src_buffer);
-static int CountNumbers (int val);
-static void ParseHashData (hash_ctx_t* hash_ctx, char* buffer, int file_name);
-
 //————————————————————————————————————————————————————————————————————————————————
 
 hash_err_t TakeHashData (hash_ctx_t* hash_ctx, char* file_name)

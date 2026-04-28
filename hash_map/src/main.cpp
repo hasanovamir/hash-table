@@ -13,6 +13,8 @@ int main (int argc, char** argv)
 
     HashDumpForData (hash_ctx, "data/csv/HASH_1.csv");
 
+    HashTest (hash_ctx, "data/txt/test_data.txt");
+
     HashDestroy (hash_ctx);
 
     return 0;
