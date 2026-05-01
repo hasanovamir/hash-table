@@ -30,13 +30,15 @@ hash_err_t InitHashMap (hash_ctx_t** hash_ctx)
 
 //————————————————————————————————————————————————————————————————————————————————
 
-hash_err_t HashInitNewStr (int str_len, char** buf)
+hash_err_t HashInitNewStr (int str_len, str_ctx_t* str_ctx)
 {
-    *buf = (char*) calloc (str_len + 1, sizeof (char));
-    if (*buf == nullptr) {
+    char* buf = (char*) calloc (str_len + 1, sizeof (char));
+    if (buf == nullptr) {
         PRINTERR (hash_err_t::allocate_err);
         return hash_err_t::allocate_err;
     }
+
+    str_ctx->str = buf;
 
     return hash_err_t::success;
 }
@@ -49,7 +51,7 @@ void HashDestroy (hash_ctx_t* hash_ctx)
         list_t* cur_list = hash_ctx->src[j];
 
         for (int i = 0; i < cur_list->size + 1; i++) {
-            free (cur_list->data[i]);
+            free (cur_list->data[i].str);
         }
 
         ListDestroy (cur_list);

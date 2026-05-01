@@ -2,16 +2,18 @@
 
 //————————————————————————————————————————————————————————————————————————————————
 
-static int HashFunc5 (char* str, int str_len);
-static int HashFunc4 (char* str, int str_len);
-static int HashFunc3 (char* str, int str_len);
-static int HashFunc2 (char* str, int str_len);
-static int HashFunc1 (char* str, int str_len);
+static u_int64_t HashFunc5 (char* str, int str_len);
+static u_int64_t HashFunc4 (char* str, int str_len);
+static u_int64_t HashFunc3 (char* str, int str_len);
+static u_int64_t HashFunc2 (char* str, int str_len);
+static u_int64_t HashFunc1 (char* str, int str_len);
 
 //————————————————————————————————————————————————————————————————————————————————
 
-int CountHashFunction (char* str, int str_len) {
-    int hash = 0;
+u_int64_t CountHashFunction (char* str, int str_len)
+{
+    u_int64_t hash = 0;
+
 #if defined(HASH_5)
     hash = HashFunc5(str, str_len);
 #elif defined(HASH_4)
@@ -30,14 +32,14 @@ int CountHashFunction (char* str, int str_len) {
 
 //————————————————————————————————————————————————————————————————————————————————
 
-static int HashFunc1 (char* str, int str_len)
+static u_int64_t HashFunc1 (char* str, int str_len)
 {
     return 0;
 }
 
 //————————————————————————————————————————————————————————————————————————————————
 
-static int HashFunc2 (char* str, int str_len)
+static u_int64_t HashFunc2 (char* str, int str_len)
 {
     DEBUG_ASSERT (str != nullptr);
 
@@ -46,16 +48,16 @@ static int HashFunc2 (char* str, int str_len)
 
 //————————————————————————————————————————————————————————————————————————————————
 
-static int HashFunc3 (char* str, int str_len)
+static u_int64_t HashFunc3 (char* str, int str_len)
 {
     return str_len;
 }
 
 //————————————————————————————————————————————————————————————————————————————————
 
-static int HashFunc4 (char* str, int str_len)
+static u_int64_t HashFunc4 (char* str, int str_len)
 {
-    int hash = 0;
+    u_int64_t hash = 0;
 
     for (int i = 0; i < str_len; i++) {
         hash += str[i];
@@ -66,33 +68,28 @@ static int HashFunc4 (char* str, int str_len)
 
 //————————————————————————————————————————————————————————————————————————————————
 
-static int HashFunc5 (char* str, int str_len) 
+static u_int64_t HashFunc5 (char* str, int str_len) 
 {
     DEBUG_ASSERT (str != nullptr);
 
-    unsigned int result = 0;
+    u_int64_t result = 0;
 
     __asm__ volatile (
-    "movl  $5381, %%eax\n"
+    "movq  $5381, %%rax\n"
     "movq  %1   , %%r8 \n"
     "movl  %2   , %%ecx\n"
     ".hash_count_loop: \n"
 
-    "shll   $2    , %%eax   \n"
-    "leal   (%%eax, %%eax, 8), %%eax   \n"
-    "movzbl (%%r8), %%edx   \n"
-    "addl   %%edx , %%eax   \n"
+    "shlq   $2    , %%rax   \n"
+    "leaq   (%%rax, %%rax, 8), %%rax   \n"
+    "movq   (%%r8), %%rdx   \n"
+    "addq   %%rdx , %%rax   \n"
     "incq   %%r8            \n"
     "loop   .hash_count_loop\n"
 
-    "movl   $10000, %%ecx\n"
-    "xorl   %%edx , %%edx\n"
-    "divl   %%ecx        \n"
-    "movl   %%edx , %0   \n"
-
     : "=r" (result)
     : "r" (str), "r" (str_len)
-    : "eax", "ecx", "edx", "r8", "memory", "cc"
+    : "rax", "ecx", "rdx", "r8", "memory", "cc"
     );
 
     // unsigned int cur_hash = 0;
@@ -105,7 +102,7 @@ static int HashFunc5 (char* str, int str_len)
 
     // return (int) hash;
     
-    return (int)result;
+    return (u_int64_t) result;
 }
 
 //————————————————————————————————————————————————————————————————————————————————

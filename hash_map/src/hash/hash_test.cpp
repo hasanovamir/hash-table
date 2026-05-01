@@ -35,10 +35,14 @@ void HashTestProcess (hash_ctx_t* hash_ctx, char* buffer, int file_size)
 
     int src_pos = 0;
 
+    char str[kCommonStringSize] = "";
+    int  str_len                = 0;
+    bool load_factor            = false;
+
     while (src_pos < file_size) {
-        char str[kCommonStringSize] = "";
-        int  str_len     = CopyCurStr (buffer + src_pos, str, &src_pos, file_size);
-        bool load_factor = HashFindElement (hash_ctx, str, str_len);
+        str_len      = CopyCurStr      (buffer + src_pos, str, &src_pos, file_size);
+        str[str_len] = '0';
+        load_factor  = HashFindElement (hash_ctx, str, str_len);
     }
 }
 

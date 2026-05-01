@@ -7,7 +7,7 @@
 
 //————————————————————————————————————————————————————————————————————————————————
 
-const int kListStartCapacity = 11;
+const int kListStartCapacity = 20;
 const int kMaxStringSize     = 256;
 const int kMaxCommandSize    = 128;
 const int kMaxFileNameSize   = 32;

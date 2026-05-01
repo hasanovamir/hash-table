@@ -22,8 +22,8 @@ hash_err_t HashDump (hash_ctx_t* hash_ctx, const char* file_name)
         fprintf (csv_file, "Hash = %d |", j);
 
         for (int i = 1; i < list_size; i++) {
-            if (cur_list->data[i] == nullptr) break;
-            fprintf (csv_file, " idx = %d; val = %s |", i, cur_list->data[i]);
+            if (cur_list->data[i].str == nullptr) break;
+            fprintf (csv_file, " idx = %d; val = %s |", i, cur_list->data[i].str);
         }
 
         fprintf (csv_file, "\n");
