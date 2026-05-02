@@ -9,7 +9,7 @@
 
 //--------------------------------------------------------------------------------
 
-const int kHashMapCap = 10000;
+const int kHashMapCap = 10007;
 
 //--------------------------------------------------------------------------------
 
@@ -54,7 +54,7 @@ hash_err_t HashDump          (hash_ctx_t* hash_ctx, const char* file_name       
 hash_err_t HashInsert        (hash_ctx_t* hash_ctx, char* str, int str_len          );
 hash_err_t ReadSrc           (const char* file_name, int file_size, char* src_buffer);
 u_int64_t  CountHashFunction (char* str, int str_len                                );
-bool       HashFindElement   (hash_ctx_t* hash_ctx , char* str   , int str_len      );
+bool       HashFindElement   (hash_ctx_t* hash_ctx, char* str, int str_len, u_int64_t hash);
 void       ParseHashData     (hash_ctx_t* hash_ctx , char* buffer, int file_name    );
 void       HashDestroy       (hash_ctx_t* hash_ctx                                  );
 int        CountNumbers      (int val                                               );

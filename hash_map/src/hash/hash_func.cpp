@@ -14,16 +14,16 @@ u_int64_t CountHashFunction (char* str, int str_len)
 {
     u_int64_t hash = 0;
 
-#if defined(HASH_5)
-    hash = HashFunc5(str, str_len);
-#elif defined(HASH_4)
-    hash = HashFunc4(str, str_len);
-#elif defined(HASH_3)
-    hash = HashFunc3(str, str_len);
-#elif defined(HASH_2)
-    hash = HashFunc2(str, str_len);
-#elif defined(HASH_1)
-    hash = HashFunc1(str, str_len);
+#if defined (HASH_5)
+    hash = HashFunc5 (str, str_len);
+#elif defined (HASH_4)
+    hash = HashFunc4 (str, str_len);
+#elif defined (HASH_3)
+    hash = HashFunc3 (str, str_len);
+#elif defined (HASH_2)
+    hash = HashFunc2 (str, str_len);
+#elif defined (HASH_1)
+    hash = HashFunc1 (str, str_len);
 #else
     hash = HashFunc5 (str, str_len);
 #endif
