@@ -42,7 +42,8 @@ void HashTestProcess (hash_ctx_t* hash_ctx, char* buffer, int file_size)
 
     while (src_pos < file_size) {
         str_len      = CopyCurStr      (buffer + src_pos, str, &src_pos, file_size);
-        str[str_len] = '0';
+        //str[str_len] = '0';
+        // SPEED_TEST (hash = CountHashFunction (str, str_len), "speed_test.txt")
         hash         = CountHashFunction (str, str_len);
         load_factor  = HashFindElement (hash_ctx, str, str_len, hash);
     }
@@ -74,3 +75,4 @@ int CopyCurStr (char* src, char* dst, int* pos, int file_size)
 }
 
 //————————————————————————————————————————————————————————————————————————————————
+

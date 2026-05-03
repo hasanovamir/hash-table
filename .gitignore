@@ -3,3 +3,4 @@ dump
 *.out
 *.csv
 Makefile
+callgrind.out.*

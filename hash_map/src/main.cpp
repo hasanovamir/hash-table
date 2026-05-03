@@ -15,6 +15,8 @@ int main (int argc, char** argv)
 
     HashTest (hash_ctx, "data/txt/test_data.txt");
 
+    fprintf (stderr, "%d", hash_ctx->calls);
+
     HashDestroy (hash_ctx);
 
     return 0;

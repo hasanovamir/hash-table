@@ -75,27 +75,32 @@ static u_int64_t HashFunc5 (char* str, int str_len)
     u_int64_t result = 0;
 
     __asm__ volatile (
-    "movq  $5381, %%rax\n"
-    "movq  %1   , %%r8 \n"
-    "movl  %2   , %%ecx\n"
-    ".hash_count_loop: \n"
 
-    "shlq   $2    , %%rax   \n"
-    "leaq   (%%rax, %%rax, 8), %%rax   \n"
-    "movq   (%%r8), %%rdx   \n"
-    "addq   %%rdx , %%rax   \n"
-    "incq   %%r8            \n"
-    "loop   .hash_count_loop\n"
+        "movq  $5381, %%rax\n"
+        "movq  %1   , %%r8 \n"
+        "movl  %2   , %%ecx\n"
+        "testl %%ecx, %%ecx\n"
+        "jz    1f          \n"
+        "0:                \n"
 
-    : "=r" (result)
-    : "r" (str), "r" (str_len)
-    : "rax", "ecx", "rdx", "r8", "memory", "cc"
+        "movq   %%rax , %%rdx\n"
+        "shlq   $2    , %%rax\n"
+        "leaq   (%%rdx, %%rax, 8), %%rax\n"
+        "movzbq (%%r8), %%rdx\n"
+        "addq   %%rdx , %%rax\n"
+        "incq   %%r8         \n"
+        "loop   0b           \n"
+        "1:                  \n"
+
+        : "=a" (result)
+        : "r" (str), "r" (str_len)
+        : "rcx", "rdx", "r8", "memory", "cc"
     );
 
     // unsigned int cur_hash = 0;
 
     // for (int i = 0; i < str_len; i++) {
-    //     cur_hash = (cur_hash << 5) + cur_hash + str[i];
+    //     result = (result << 5) + result + str[i];
     // }
 
     // unsigned hash = cur_hash % kHashMapCap;

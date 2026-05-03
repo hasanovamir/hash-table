@@ -16,6 +16,7 @@ const int kHashMapCap = 10007;
 struct hash_ctx_t
 {
     list_t** src;
+    int calls;
 } ;
 
 //--------------------------------------------------------------------------------
@@ -59,5 +60,19 @@ void       ParseHashData     (hash_ctx_t* hash_ctx , char* buffer, int file_name
 void       HashDestroy       (hash_ctx_t* hash_ctx                                  );
 int        CountNumbers      (int val                                               );
 int        CopyCurStr        (char* src, char* dst, int* pos, int file_size         );
+
+//--------------------------------------------------------------------------------
+
+#define SPEED_TEST(function, file)     \
+FILE* file_ds = fopen (file, "a")     ;\
+_mm_lfence();\
+u_int64_t _start = __rdtsc ()         ;\
+_mm_lfence();\
+function                              ;\
+    _mm_lfence();\
+u_int64_t _time  = __rdtsc () - _start;\
+_mm_lfence();\
+fprintf (file_ds, "%lld\n", _time)    ;\
+fclose (file_ds)                      ;
 
 //--------------------------------------------------------------------------------
