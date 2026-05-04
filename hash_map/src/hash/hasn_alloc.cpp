@@ -30,7 +30,7 @@ hash_err_t InitHashMap (hash_ctx_t** hash_ctx)
 
 //————————————————————————————————————————————————————————————————————————————————
 
-hash_err_t HashInitNewStr (int str_len, str_ctx_t* str_ctx)
+hash_err_t HashInitNewStr (u_int64_t str_len, str_ctx_t* str_ctx)
 {
     char* buf = (char*) calloc (str_len + 1, sizeof (char));
     if (buf == nullptr) {

@@ -17,7 +17,7 @@ struct hash_ctx_t
 {
     list_t** src;
     int calls;
-} ;
+};
 
 //--------------------------------------------------------------------------------
 
@@ -44,18 +44,22 @@ enum class hash_err_t
 
 //--------------------------------------------------------------------------------
 
+extern "C" {
+bool HashFindElementAsm (hash_ctx_t* hash_ctx, char* str, u_int64_t str_len, u_int64_t hash);
+}
+
 hash_err_t InitHashMap       (hash_ctx_t** hash_ctx                                 );
 hash_err_t InitBuffer        (char** src , int    size                              );
-hash_err_t HashInitNewStr    (int str_len, str_ctx_t* str_ctx                       );
+hash_err_t HashInitNewStr    (u_int64_t str_len, str_ctx_t* str_ctx                       );
 hash_err_t TakeHashData      (hash_ctx_t* hash_ctx, char* file_name                 );
 hash_err_t HashTest          (hash_ctx_t* hash_ctx, char* file_name                 );
 hash_err_t GetFileName       (int argc, char** argv, char** file_name               );
 hash_err_t HashDumpForData   (hash_ctx_t* hash_ctx, const char* file_name           );
 hash_err_t HashDump          (hash_ctx_t* hash_ctx, const char* file_name           );
-hash_err_t HashInsert        (hash_ctx_t* hash_ctx, char* str, int str_len          );
+hash_err_t HashInsert        (hash_ctx_t* hash_ctx, char* str, u_int64_t str_len          );
 hash_err_t ReadSrc           (const char* file_name, int file_size, char* src_buffer);
-u_int64_t  CountHashFunction (char* str, int str_len                                );
-bool       HashFindElement   (hash_ctx_t* hash_ctx, char* str, int str_len, u_int64_t hash);
+u_int64_t  CountHashFunction (char* str, u_int64_t str_len                          );
+bool       HashFindElement   (hash_ctx_t* hash_ctx, char* str, u_int64_t str_len, u_int64_t hash);
 void       ParseHashData     (hash_ctx_t* hash_ctx , char* buffer, int file_name    );
 void       HashDestroy       (hash_ctx_t* hash_ctx                                  );
 int        CountNumbers      (int val                                               );

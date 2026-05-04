@@ -65,9 +65,9 @@ void ParseHashData (hash_ctx_t* hash_ctx, char* buffer, int file_size)
     int pos = 0;
 
     while (pos < file_size) {
-        int str_len = atoi (buffer + pos);
+        u_int64_t str_len = atoi (buffer + pos);
 
-        int num_len = CountNumbers (str_len);
+        u_int64_t num_len = CountNumbers (str_len);
 
         pos += num_len;
         HashInsert (hash_ctx, buffer + pos, str_len);

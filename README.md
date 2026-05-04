@@ -111,7 +111,7 @@ static u_int64_t HashFunc4 (char* str, int str_len)
 
 ![Локальное фото](./data/png/HASH_4.png)
 
-Наверное, самая интересная из всех деманстартивных хеш-функций, данных нам Дединским. Интересным является форма гистограммы. Естественное возрастание и падение, наличие пиков. Но все же колличество коллизий функция слабо уменьшает. Поэтому перейдем к существующим хеш-функиям.
+Наверное, самая интересная из всех демонстартивных хеш-функций, данных нам Дединским. Интересным является форма гистограммы. Естественное возрастание и падение, наличие пиков. Но все же колличество коллизий функция слабо уменьшает. Поэтому перейдем к существующим хеш-функиям.
 
 ### 5. DJB2
 
@@ -251,7 +251,7 @@ HashFunc5(char*, int):                        | "longHashFunc5(char*, int)":
 
 ![Локальное фото](./data/optimization_png/hash_opt.png)
 
-Профилировщик показывает ускорение в _13.9 / 9.3 = 1.5_, мы ускорили на 50%. Отличный результат, и оптимизировать ее уже некуда. Но можно рассмотреть другую хеш-функцию, crc32.
+Профилировщик показывает ускорение в _13.9 / 9.3 = 1.5_, мы ускорили на 50%. Отличный результат, и оптимизировать ее уже некуда.
 
 ### 3. Оптимизация strcmp
 
@@ -283,8 +283,248 @@ for (int i = 1; i < target_list->size + 1; i++) {
 
 ![Локальное фото](./data/optimization_png/big_bd.png)
 
-Вот это уже интересный эксперимент, 10 миллионов вызовов str_cmp. Теперь проверим для оптимизированной версии:
+Вот это уже интересный эксперимент, 10 миллионов вызовов ```str_cmp```. Теперь проверим для оптимизированной версии:
 
 ![Локальное фото](./data/optimization_png/big_bd_opt.png)
 
-Теперь у нас всего 107 тысяч вызово str_cmp. То есть мы избавились от 9907064 / 107338 = 92.29, мы избавились от 92% сравнений строк. Это конечно хорошо, но нужно же убедиться, что это в действительности оптимизация. Для этого взглянем на значения времени работы ```HashFindElement``` в столбце _вкл_, для измерения общего времени со всеми вызовами функций. Получаем ускорение в 118 462 238 / 82 069 886 = 1.44, ускорение на 44%.
+Теперь у нас всего 107 тысяч вызово ```str_cmp```. То есть мы избавились от 9907064 / 107338 = 92.29, мы избавились от 92% сравнений строк. Это конечно хорошо, но нужно же убедиться, что это в действительности оптимизация. Для этого взглянем на значения времени работы ```HashFindElement``` в столбце _вкл_, для измерения общего времени со всеми вызовами функций. Получаем ускорение в 118 462 238 / 82 069 886 = 1.44, ускорение на 44%.
+
+
+### 4. Оптимизация
+
+Обратимся к предыдущему замеру скорости. Видим, что большую часть времени занимают ```calloc``` ,```free``` и вызываемые ими функции. В нашем use-case они не оптимизируются, значит следующая на очереди ```HashFindElement```
+
+``` C++
+bool HashFindElement (hash_ctx_t* hash_ctx, char* str, int str_len, u_int64_t hash)
+{
+    DEBUG_ASSERT (hash_ctx != nullptr);
+
+    list_t* target_list = hash_ctx->src[hash % kHashMapCap];
+    if (target_list == nullptr) {
+        PRINTERR (target_list == nullptr);
+        return false;
+    }
+
+    const char *target_str = str;
+size_t target_len = str_len;
+uint32_t target_hash = hash;
+for (int i = 1; i <= target_list->size; ++i) {
+    str_ctx_t *item = &target_list->data[i];
+    if (item->str_len == target_len && item->hash == target_hash) {
+        if (memcmp(target_str, item->str, target_len) == 0) return true;
+    }
+}
+
+    return false;
+}
+```
+
+Профлировщик, погзволяет нам смотреть затраты прямо в коде.
+
+![Локальное фото](./data/optimization_png/find_el.png)
+
+Из измерений видем, что цикл сравненый занимает 60 миллионов тактов.
+Посмотрим, как раскрывается данная функция:
+
+``` asm
+;arguments in registers: RDI, RSI, RDX, RCX, R8, R9
+;caller  save registers: RDI, RSI, RDX, RCX, R8, R9, RAX, R10, R11
+
+;==============================================
+;shift rsp
+        sub     rsp, 56
+;save r13 value
+        mov     QWORD PTR [rsp+32], r13
+;save str_len into r13
+        movsxd  r13, edx
+
+;==============================================
+list_t* target_list = hash_ctx->src[hash % kHashMapCap];
+;r8 = hash
+        mov     r8, rcx
+
+        movabs  rax, -6691484059914626997
+        mul     rcx
+        mov     rax, rcx
+        sub     rax, rdx
+        shr     rax
+        add     rdx, rax
+        mov     rax, QWORD PTR [rdi]
+        shr     rdx, 13
+        imul    rdx, rdx, 10007
+        sub     r8, rdx
+;rax = target_list
+        mov     rax, QWORD PTR [rax+r8*8]
+    
+;==============================================
+;if (target_list == nullptr) return error_code
+        test    rax, rax
+        je      .L4
+
+;==============================================
+;save r15
+        mov     QWORD PTR [rsp+48], r15
+;int size = target_list->size + 1;
+        mov     r15d, DWORD PTR [rax+36]
+;if size <= 0 return...
+        test    r15d, r15d
+        jle     .L10
+;save rbx
+        mov     QWORD PTR [rsp+8], rbx
+;rbx = str_ctx
+        mov     rbx, QWORD PTR [rax]
+;save rbp
+        mov     QWORD PTR [rsp+16], rbp
+        mov     ebp, 1
+;save r12
+        mov     QWORD PTR [rsp+24], r12
+;rbx = str_len
+        add     rbx, 24
+;r12 = hash
+        mov     r12, rcx
+;save r14
+        mov     QWORD PTR [rsp+40], r14
+;r14 = str
+        mov     r14, rsi
+        jmp     .L6
+.L5:
+;go to next compare
+        add     ebp, 1
+        add     rbx, 24
+;if cur_el > list_size jmp end
+        cmp     r15d, ebp
+        jl      .L12
+
+;==============================================
+
+.L6:
+
+;jmp .l5 if hash != target_hash
+        cmp     QWORD PTR [rbx+8], r12
+        jne     .L5
+;jmp .l5 if str_len != str_len
+        cmp     QWORD PTR [rbx], r13
+        jne     .L5
+        mov     rsi, QWORD PTR [rbx+16]
+        mov     rdx, r13
+        mov     rdi, r14
+        call    "memcmp"
+        test    eax, eax
+        jne     .L5
+
+;find word
+        mov     rbx, QWORD PTR [rsp+8]
+        mov     rbp, QWORD PTR [rsp+16]
+        mov     eax, 1
+        mov     r12, QWORD PTR [rsp+24]
+        mov     r14, QWORD PTR [rsp+40]
+        mov     r15, QWORD PTR [rsp+48]
+        mov     r13, QWORD PTR [rsp+32]
+        add     rsp, 56
+        ret
+.L12:
+        mov     rbx, QWORD PTR [rsp+8]
+        mov     rbp, QWORD PTR [rsp+16]
+        mov     r12, QWORD PTR [rsp+24]
+        mov     r14, QWORD PTR [rsp+40]
+        mov     r15, QWORD PTR [rsp+48]
+.L4:
+        mov     r13, QWORD PTR [rsp+32]
+        xor     eax, eax
+        add     rsp, 56
+        ret
+.L10:
+        mov     r15, QWORD PTR [rsp+48]
+        jmp     .L4
+```
+
+Во первых уберем всесохранения caller-save регистров. К сожалению ни один из этих регистров не сохраняется. Однако мы можем заменить регистры r12, r13, r14 и r15 на регистры r8, r9,10 и r11, которые сохранять не нужно, а потому и обращений к памяти будет меньше.
+
+``` asm
+;arguments in registers: RDI, RSI, RDX, RCX, R8, R9
+;caller  save registers: RDI, RSI, RDX, RCX, R8, R9, RAX, R10, R11
+
+;==============================================
+;shift rsp
+        sub     rsp, 16
+;save str_len into r11
+        movsxd  r11, edx
+
+        mov [rsp     ], rdx
+        mov [rsp + 8 ], rcx
+        mov [rsp + 16], rsi
+
+;==============================================
+list_t* target_list = hash_ctx->src[hash % kHashMapCap];
+;r8 = hash
+
+        mov     r8, rcx
+        movabs  rax, 0x68DB8BAD69ED7A99
+        mul     rcx
+        shr     rdx, 16
+        imul    rdx, rdx, 10007
+        sub     r8, rdx
+
+;rax = target_list
+        mov     rax, QWORD PTR [rax+r8*8]
+    
+;==============================================
+;if (target_list == nullptr) return error_code
+        test    rax, rax
+        je      .L4
+
+;==============================================
+
+;int size = target_list->size + 1;
+        mov     r10d, DWORD PTR [rax+36]
+;if size <= 0 return...
+        test    r10d, r10d
+        jle     .L4
+;rdi = str_ctx
+        mov     rdi, QWORD PTR [rax]
+        mov     esi, 1
+;rdi = str_len
+        add     rdi, 24
+;r9 = hash
+        mov     r9, rcx
+;r8 = str
+        mov     r8, rsi
+        jmp     .L6
+.L5:
+
+;go to next compare
+        add     esi, 1
+        add     rdi, 24
+;if cur_el > list_size jmp end
+        cmp     r10d, esi
+        jl      .L4
+
+;==============================================
+
+.L6:
+
+;jmp .l5 if hash != target_hash
+        cmp     QWORD PTR [rdi+8], r9
+        jne     .L5
+;jmp .l5 if str_len != str_len
+        cmp     QWORD PTR [rdi], r11
+        jne     .L5
+        mov     rsi, QWORD PTR [rdi+16]
+        mov     rdx, r11
+        mov     rdi, r8
+        call    "memcmp"
+        test    eax, eax
+        jne     .L5
+
+;find word
+        mov     eax, 1
+        add     rsp, 56
+        ret
+
+.L4:
+        xor     eax, eax
+        add     rsp, 16
+        ret
+```
+
+К сожалению, заменяя callee-saved регистры функция всегда падает в сегфолт, потому что memcmp ломает регистры, а сохранять их на стеке не целесообразно, так же как и просто сохранение 3 calle-saved регистров. Мною написанная версия оказалась на 25% медленее. Поэтому на этом оптимизация HashFindElement заканчивается

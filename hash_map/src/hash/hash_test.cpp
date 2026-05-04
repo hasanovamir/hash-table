@@ -36,7 +36,7 @@ void HashTestProcess (hash_ctx_t* hash_ctx, char* buffer, int file_size)
     int src_pos = 0;
 
     char      str[kCommonStringSize] = "";
-    int       str_len                = 0;
+    u_int64_t str_len                = 0;
     bool      load_factor            = false;
     u_int64_t hash                   = 0;
 

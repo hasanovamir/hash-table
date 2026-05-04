@@ -2,7 +2,7 @@
 
 //————————————————————————————————————————————————————————————————————————————————
 
-hash_err_t HashInsert (hash_ctx_t* hash_ctx, char* str, int str_len)
+hash_err_t HashInsert (hash_ctx_t* hash_ctx, char* str, u_int64_t str_len)
 {
     DEBUG_ASSERT (str != nullptr);
 
@@ -29,7 +29,7 @@ hash_err_t HashInsert (hash_ctx_t* hash_ctx, char* str, int str_len)
 
 //————————————————————————————————————————————————————————————————————————————————
 
-bool HashFindElement (hash_ctx_t* hash_ctx, char* str, int str_len, u_int64_t hash)
+bool HashFindElement (hash_ctx_t* hash_ctx, char* str, u_int64_t str_len, u_int64_t hash)
 {
     DEBUG_ASSERT (hash_ctx != nullptr);
 
@@ -39,11 +39,14 @@ bool HashFindElement (hash_ctx_t* hash_ctx, char* str, int str_len, u_int64_t ha
         return false;
     }
 
-    for (int i = 1; i < target_list->size + 1; i++) {
-        str_ctx_t str_ctx = target_list->data[i];
-        // if (str_ctx.str_len != str_len) continue;
-        // if (str_ctx.hash    != hash   ) continue;
-        if (strncmp (str, str_ctx.str, str_len) == 0) return true;
+    str_ctx_t str_ctx = {};
+    int       size    = target_list->size + 1;
+
+    for (int i = 1; i < size; i++) {
+        str_ctx = target_list->data[i];
+        if (str_ctx.str_len != str_len) continue;
+        if (str_ctx.hash    != hash   ) continue;
+        if (memcmp(str, str_ctx.str, str_len) == 0) return true;
     }
 
     return false;
